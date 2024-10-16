@@ -27,11 +27,11 @@ exports.getProductById = async (req, res) => {
 
 // Create a new product
 exports.createProduct = async (req, res) => {
-  const { title, description, status } = req.body;
+  const { name, description, status } = req.body;
   try {
     const { rows } = await pool.query(
-      "INSERT INTO products (title, description, status) VALUES ($1, $2, $3) RETURNING *",
-      [title, description, status]
+      "INSERT INTO products (name, description, status) VALUES ($1, $2, $3) RETURNING *",
+      [name, description, status]
     );
     res.status(201).json(rows[0]);
   } catch (error) {
@@ -41,11 +41,11 @@ exports.createProduct = async (req, res) => {
 
 // Update a product by ID
 exports.updateProduct = async (req, res) => {
-  const { title, description, status } = req.body;
+  const { name, description, status } = req.body;
   try {
     const { rowCount } = await pool.query(
-      "UPDATE products SET title = $1, description = $2, status = $3 WHERE id = $4",
-      [title, description, status, req.params.id]
+      "UPDATE products SET name = $1, description = $2, status = $3 WHERE id = $4",
+      [name, description, status, req.params.id]
     );
     if (rowCount === 0) {
       return res.status(404).json({ message: "Product not found" });
