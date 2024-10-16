@@ -1,59 +1,73 @@
-const Product = require("../models/productModel");
+const pool = require("../config/db");
 
-// Controller to get all products
-exports.getAllProducts = (req, res) => {
-  Product.getAll((err, products) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(products);
-  });
+// Get all products
+exports.getAllProducts = async (req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM products");
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// Controller to get a product by ID
-exports.getProductById = (req, res) => {
-  const id = req.params.id;
-  Product.getById(id, (err, product) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    if (!product) {
+// Get a product by ID
+exports.getProductById = async (req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM products WHERE id = $1", [
+      req.params.id,
+    ]);
+    if (rows.length === 0) {
       return res.status(404).json({ message: "Product not found" });
     }
-    res.json(product);
-  });
+    res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// Controller to create a new product
-exports.createProduct = (req, res) => {
-  const { name, description, price } = req.body;
-  Product.create({ name, description, price }, (err, newProduct) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.status(201).json(newProduct);
-  });
+// Create a new product
+exports.createProduct = async (req, res) => {
+  const { title, description, status } = req.body;
+  try {
+    const { rows } = await pool.query(
+      "INSERT INTO products (title, description, status) VALUES ($1, $2, $3) RETURNING *",
+      [title, description, status]
+    );
+    res.status(201).json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// Controller to update a product by ID
-exports.updateProduct = (req, res) => {
-  const id = req.params.id;
-  const { name, description, price } = req.body;
-  Product.update(id, { name, description, price }, (err) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+// Update a product by ID
+exports.updateProduct = async (req, res) => {
+  const { title, description, status } = req.body;
+  try {
+    const { rowCount } = await pool.query(
+      "UPDATE products SET title = $1, description = $2, status = $3 WHERE id = $4",
+      [title, description, status, req.params.id]
+    );
+    if (rowCount === 0) {
+      return res.status(404).json({ message: "Product not found" });
     }
     res.json({ message: "Product updated successfully" });
-  });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// Controller to delete a product by ID
-exports.deleteProduct = (req, res) => {
-  const id = req.params.id;
-  Product.delete(id, (err) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+// Delete a product by ID
+exports.deleteProduct = async (req, res) => {
+  try {
+    const { rowCount } = await pool.query(
+      "DELETE FROM products WHERE id = $1",
+      [req.params.id]
+    );
+    if (rowCount === 0) {
+      return res.status(404).json({ message: "Product not found" });
     }
     res.json({ message: "Product deleted successfully" });
-  });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };

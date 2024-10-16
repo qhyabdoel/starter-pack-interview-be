@@ -1,59 +1,72 @@
-const Note = require("../models/noteModel");
+const pool = require("../config/db");
 
-// Controller to get all notes
-exports.getAllNotes = (req, res) => {
-  Note.getAll((err, notes) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(notes);
-  });
+// Get all notes
+exports.getAllNotes = async (req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM notes");
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// Controller to get a note by ID
-exports.getNoteById = (req, res) => {
-  const id = req.params.id;
-  Note.getById(id, (err, note) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    if (!note) {
+// Get a note by ID
+exports.getNoteById = async (req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM notes WHERE id = $1", [
+      req.params.id,
+    ]);
+    if (rows.length === 0) {
       return res.status(404).json({ message: "Note not found" });
     }
-    res.json(note);
-  });
+    res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// Controller to create a new note
-exports.createNote = (req, res) => {
+// Create a new note
+exports.createNote = async (req, res) => {
   const { title, description, status } = req.body;
-  Note.create({ title, description, status }, (err, newNote) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.status(201).json(newNote);
-  });
+  try {
+    const { rows } = await pool.query(
+      "INSERT INTO notes (title, description, status) VALUES ($1, $2, $3) RETURNING *",
+      [title, description, status]
+    );
+    res.status(201).json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// Controller to update a note by ID
-exports.updateNote = (req, res) => {
-  const id = req.params.id;
+// Update a note by ID
+exports.updateNote = async (req, res) => {
   const { title, description, status } = req.body;
-  Note.update(id, { title, description, status }, (err) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+  try {
+    const { rowCount } = await pool.query(
+      "UPDATE notes SET title = $1, description = $2, status = $3 WHERE id = $4",
+      [title, description, status, req.params.id]
+    );
+    if (rowCount === 0) {
+      return res.status(404).json({ message: "Note not found" });
     }
     res.json({ message: "Note updated successfully" });
-  });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// Controller to delete a note by ID
-exports.deleteNote = (req, res) => {
-  const id = req.params.id;
-  Note.delete(id, (err) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+// Delete a note by ID
+exports.deleteNote = async (req, res) => {
+  try {
+    const { rowCount } = await pool.query("DELETE FROM notes WHERE id = $1", [
+      req.params.id,
+    ]);
+    if (rowCount === 0) {
+      return res.status(404).json({ message: "Note not found" });
     }
     res.json({ message: "Note deleted successfully" });
-  });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };

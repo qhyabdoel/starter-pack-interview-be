@@ -1,56 +1,72 @@
-const Task = require("../models/taskModel");
+const pool = require("../config/db");
 
-const createTask = (req, res) => {
-  const { title, description, status } = req.body;
-  Task.create({ title, description, status }, (err, task) => {
-    if (err) {
-      return res.status(500).json({ message: err.message });
-    }
-    res.status(201).json(task);
-  });
+// Get all tasks
+exports.getAllTasks = async (req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM tasks");
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const getTasks = (req, res) => {
-  Task.findAll((err, tasks) => {
-    if (err) {
-      return res.status(500).json({ message: err.message });
-    }
-    res.status(200).json(tasks);
-  });
-};
-
-const getTaskById = (req, res) => {
-  const { id } = req.params;
-  Task.findById(id, (err, task) => {
-    if (err) {
-      return res.status(500).json({ message: err.message });
-    }
-    if (!task) {
+// Get a task by ID
+exports.getTaskById = async (req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM tasks WHERE id = $1", [
+      req.params.id,
+    ]);
+    if (rows.length === 0) {
       return res.status(404).json({ message: "Task not found" });
     }
-    res.status(200).json(task);
-  });
+    res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const updateTask = (req, res) => {
-  const { id } = req.params;
+// Create a new task
+exports.createTask = async (req, res) => {
   const { title, description, status } = req.body;
-  Task.update(id, { title, description, status }, (err, task) => {
-    if (err) {
-      return res.status(500).json({ message: err.message });
-    }
-    res.status(200).json(task);
-  });
+  try {
+    const { rows } = await pool.query(
+      "INSERT INTO tasks (title, description, status) VALUES ($1, $2, $3) RETURNING *",
+      [title, description, status]
+    );
+    res.status(201).json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-const deleteTask = (req, res) => {
-  const { id } = req.params;
-  Task.delete(id, (err, result) => {
-    if (err) {
-      return res.status(500).json({ message: err.message });
+// Update a task by ID
+exports.updateTask = async (req, res) => {
+  const { title, description, status } = req.body;
+  try {
+    const { rowCount } = await pool.query(
+      "UPDATE tasks SET title = $1, description = $2, status = $3 WHERE id = $4",
+      [title, description, status, req.params.id]
+    );
+    if (rowCount === 0) {
+      return res.status(404).json({ message: "Task not found" });
     }
-    res.status(200).json(result);
-  });
+    res.json({ message: "Task updated successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-module.exports = { createTask, getTasks, getTaskById, updateTask, deleteTask };
+// Delete a task by ID
+exports.deleteTask = async (req, res) => {
+  try {
+    const { rowCount } = await pool.query("DELETE FROM tasks WHERE id = $1", [
+      req.params.id,
+    ]);
+    if (rowCount === 0) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    res.json({ message: "Task deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

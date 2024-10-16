@@ -6,7 +6,6 @@ const taskRoutes = require("./routes/taskRoutes");
 const productRoutes = require("./routes/productRoutes");
 const noteRoutes = require("./routes/noteRoutes");
 const cors = require("cors"); // Import cors
-const db = require("./config/db");
 const swaggerUi = require("swagger-ui-express");
 const yaml = require("yamljs");
 
