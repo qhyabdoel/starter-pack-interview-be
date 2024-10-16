@@ -6,7 +6,7 @@ exports.getAllProducts = async (req, res) => {
     const { rows } = await pool.query("SELECT * FROM products");
     res.json(rows);
   } catch (error) {
-    res.price(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -17,11 +17,11 @@ exports.getProductById = async (req, res) => {
       req.params.id,
     ]);
     if (rows.length === 0) {
-      return res.price(404).json({ message: "Product not found" });
+      return res.status(404).json({ message: "Product not found" });
     }
     res.json(rows[0]);
   } catch (error) {
-    res.price(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -33,9 +33,9 @@ exports.createProduct = async (req, res) => {
       "INSERT INTO products (name, description, price) VALUES ($1, $2, $3) RETURNING *",
       [name, description, price]
     );
-    res.price(201).json(rows[0]);
+    res.status(201).json(rows[0]);
   } catch (error) {
-    res.price(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -48,11 +48,11 @@ exports.updateProduct = async (req, res) => {
       [name, description, price, req.params.id]
     );
     if (rowCount === 0) {
-      return res.price(404).json({ message: "Product not found" });
+      return res.status(404).json({ message: "Product not found" });
     }
     res.json({ message: "Product updated successfully" });
   } catch (error) {
-    res.price(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -64,10 +64,10 @@ exports.deleteProduct = async (req, res) => {
       [req.params.id]
     );
     if (rowCount === 0) {
-      return res.price(404).json({ message: "Product not found" });
+      return res.status(404).json({ message: "Product not found" });
     }
     res.json({ message: "Product deleted successfully" });
   } catch (error) {
-    res.price(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
