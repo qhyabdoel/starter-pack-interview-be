@@ -1,4 +1,3 @@
-
 # Interview Task: Login API and CRUD Service
 
 👋 Hello, welcome to our interview task.
@@ -31,18 +30,20 @@ You are required to create a **backend API** using either **Golang** or **Node.j
 ### Step 1: Clone and Setup the Frontend
 
 1. **Clone this repository** clone it locally.
-2. **Install dependencies** using your preferable language either, golang, python or nodejs.
+2. **Install dependencies** using your preferable language either, golang, python or nodejs test.
 
 ### Step 2: Build the Backend API
 
 You will need to build a separate backend API using **Golang** or **Node.js**.
 
 1. **Create a Login API**:
+
    - Implement a `POST /login` route to handle user authentication.
    - Use **JWT** for authentication.
    - Upon successful login, return a JWT token.
 
 2. **Create a CRUD Service**:
+
    - Implement a basic CRUD service to manage resources (e.g., `Tasks`, `Products`, or `Notes`).
    - CRUD routes example:
      - `GET /items`: Retrieve all items.
