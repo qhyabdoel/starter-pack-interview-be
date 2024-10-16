@@ -1,3 +1,8 @@
+# Test results
+
+- I have deployed the back end. You can see it at https://kikibetestsp.vercel.app
+- API documentation is at https://documenter.getpostman.com/view/1181506/2sAXxV5pbc
+
 # Interview Task: Login API and CRUD Service
 
 👋 Hello, welcome to our interview task.
